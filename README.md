@@ -55,8 +55,11 @@ data types:
 
     Dictionarirs
     ----------(like map)
-
+    {key:value}
+    
       keys, values, items
       has_key
 
-keys can be -- number, string, tuple
+    keys can be -- number, string, tuple
+
+

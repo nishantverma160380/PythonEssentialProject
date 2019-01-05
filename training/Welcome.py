@@ -10,3 +10,6 @@ print(tu[1:3])
 l=[1,2,4,5]
 print(3 in l)
 
+a, b = 1, 2
+print(b)
+print(a)
