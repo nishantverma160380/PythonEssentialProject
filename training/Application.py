@@ -4,6 +4,9 @@ Created On Jan 5, 2019
 
 '''
 
+from os.path import sys
+import pickle
+from mysql.connector import connect
 
 class Employee(object):
     # Class level variable
@@ -35,9 +38,54 @@ class Employee(object):
         return self.__process_salary(30)
 
     # Static Method of the class
-    @staticmethod
-    def read_employee_from_file(fileName):
+    @classmethod
+    def read_employee_from_file(cls, fileName):
         print("Read employee object from file : " + fileName)
+        try:
+            cls.emps_from_file = []
+            currentFile = open(fileName, "rb")
+            cls.emps_from_file = pickle.load(currentFile)
+            currentFile.close()
+        except:
+            print("Exception Occurred: ", sys.exc_info())
+            cls.emps_from_file = []
+        finally:
+            return cls.emps_from_file
+
+    @classmethod
+    def write_employee_to_file(cls, fileName, newEmp):
+        #print("Write employee object to file : " + fileName)
+        try:
+            cls.emps_from_file = Employee.read_employee_from_file(fileName)
+            cls.emps_from_file.append(newEmp)
+            currentFile = open(fileName, "wb")
+            pickle.dump(cls.emps_from_file, currentFile)
+            currentFile.close()
+        except:
+            print("Exception Occurred: ", sys.exc_info())
+
+    @classmethod
+    def read_employees_from_table(cls):
+        ctx = connect(user="root", password="password", database="training", port=3306)
+        cursor = ctx.cursor()
+        cursor.execute("select * from emp_data")
+        cls.emps = []
+        for (empno, name, salary) in cursor:
+            cls.emps.append(Employee({"empno": empno, "name": name, "salary": salary}))
+        cursor.close()
+        ctx.close()
+        return cls.emps
+
+    @classmethod
+    def add_employee_to_table(cls, newEmployee):
+        ctx = connect(user="root", password="password", database="training", port=3306)
+        cursor = ctx.cursor()
+        cursor.execute("insert into emp_data values (%s,%s,%s)",
+                       (newEmployee.empno, newEmployee.name, newEmployee.salary))
+        ctx.commit()
+        print("Employee Inserted Successfully ")
+        cursor.close()
+        ctx.close()
 
     def __str__(self, *args, **kwargs):
         return "Employee: Empno: " + str(self.empno) + " Name: " + str(self.name) + " Salary: " + str(self.salary)
